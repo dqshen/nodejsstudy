@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>
+        bubble-and-capture-demo
+    </title>
+    <style>
+        p {
+            line-height: 0;
+        }
+
+        div {
+            display: inline-block;
+            padding: 5px;
+
+            background: #fff;
+            border: 1px solid #aaa;
+            cursor: pointer;
+        }
+
+        div:hover {
+            border: 1px solid #faa;
+            background: #fdd;
+        }
+    </style>
+</head>
+
+<body>
+    <div>1
+        <div>2
+            <div>3
+                <div>4
+                    <div>5</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="clear">clear output</button>
+    <section id="log"></section>
+</body>
+<script>
+    /* 
+ * source 1: https://dom.spec.whatwg.org/#dom-event-eventphase
+ * source 2: https://stackoverflow.com/a/4616720/15266715
+*/
+    let evtPhasestr = ["NONE: ", "CAPTURING_PHASE: ", "AT_TARGET: ", "BUBBLING_PHASE: "];
+    var logElement = document.getElementById('log');
+
+    function log(msg) {
+        logElement.innerHTML += ('<p>' + msg + '</p>');
+    }
+
+    function phase(evt) {
+        log(evtPhasestr[evt.eventPhase] + this.firstChild.nodeValue.trim());
+        // evt.stopPropagation();//阻止事件传递
+        // log(`Clicked target is `+ evt.target.nodeName);//evt.target用于获取实际点击对象
+    }
+    function gphase(evt) {
+        log(evtPhasestr[evt.eventPhase] + evt.currentTarget)
+    }
+
+    function clearOutput() {
+        logElement.innerHTML = "";
+    }
+
+    var divs = document.getElementsByTagName('div');
+    for (var i = 0; i < divs.length; i++) {
+        divs[i].addEventListener('click', phase, true);//mode capture，事件从外向内传递
+        divs[i].addEventListener('click', phase, false);//mode bubble,事件从内向外传递
+    }
+    document.addEventListener('click', gphase, true);
+    document.addEventListener('click', gphase, false);
+    window.addEventListener('click', gphase, true);
+    window.addEventListener('click', gphase, false);
+
+    var clearButton = document.getElementById('clear');
+    clearButton.addEventListener('click', clearOutput);
+</script>
+
+</html>
