@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simple fetch() with async/await</title>
+  </head>
+  <body>
+    <script>
+      // Call the fetch() method to fetch the image, and store it in a variable
+      // async函数产生的返回值都代表一个以原始返回值为结果、能够向下传递的Promise
+      async function myFetch() {
+        //await 在async中，放在返回promise的函数前面，可以起到异步阻塞作用
+        let response = await fetch('coffee.jpg');
+        // Use a then() block to respond to the promise's successful completion
+        // by taking the returned response and running blob() on it to transform it into a blob
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+          //这里抛出error会被后面的catch接收，虽然myFetch内部也可以用try...catch，
+          //但是因为下面的then也可能会抛出异常，所以选择在此抛出异常，用catch一起处理这里和then中的异常
+        } else {
+          //这里返回的response.blob()，相当于在then()的回调函数中返回一个response.blob()，
+          //将会作为后面then的输入参数对象，myFetch本身在作为包装这个结果的promise
+          return await response.blob();
+        }
+        // blob() also returns a promise; when it successfully completes it returns
+        // The blob object in the callback
+      }
+
+      //blob即是上面返回的response.blob()对象，只有从then才能访问，直接访问无法进行
+      myFetch().then((blob) => {
+        // Create an object URL that points to the blob object
+        let objectURL = URL.createObjectURL(blob);
+        // Create an <img> element to display the blob (it's an image)
+        let image = document.createElement('img');
+        // Set the src of the <img> to the object URL so the image displays it
+        image.src = objectURL;
+        // Append the <img> element to the DOM
+        document.body.appendChild(image);
+      }).catch(e => console.log(e));
+    </script>
+  </body>
+</html>

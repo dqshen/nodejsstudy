@@ -91,29 +91,45 @@
 
     let person1 = new Person('Tammi', 'Smith', 17, 'female', ['music', 'skiing', 'kickboxing']);
 
-    //Teacher继承Person分三步
-    //第一步，继承构造方法
+    //1.从Person继承声明Teacher的构造方法，使用call函数，注意this标识继承类，参数表根据需要
+    //这一步完成继承的前半部分，也就是让Teacher构造的对象包含Person构造函数操作的内容
     function Teacher(first, last, age, gender, interests, subject) {
-        //以Teacher的省份执行Person的构造函数
         Person.call(this, first, last, age, gender, interests);
+
         this.subject = subject;
     }
-
-
-    //第二步，让Teacher的prototype引用Person的prototype
-    //mdn教程用Object.getOwnPrototypeOf(Teacher.prototype)，确认引用前，Teacher.prototype只有Teacher的constructor对象方法，引用后，所有Person的方法都可以用Teacher.prototype访问到
+    //2.让Teacher的prototype引用Person的prototype
+    //这是继承的后半部分，让Teacher完全引用Person的prototype的内容，
+    //之后Teacher构造出来的对象teacher，它的__proto__就会包含Person.prototype里的内容
     Teacher.prototype = Object.create(Person.prototype);
 
-    //第三步，让Teacher的constructor重新进入prototype
-    //因为第二步把prototype整个引用了Person.prototype，所以要把引用的Person.prototype中的Person的constructor换回来，可以使用Object.defineProperty赋值为Teacher，也可以直接=号给它赋值
+    //3.为Teacher的prototype里constructor赋值
+    //尾声，赋值前由于Teacher全盘引用Person，所以prototype的constructor是Person的Constructor
+    //需要使用Object.defineProperty方法更改这个对象指向Teacher函数(也就是Teacher自己的Constructor)
     Object.defineProperty(Teacher.prototype, 'constructor', {
         value: Teacher,
         enumerable: false, // so that it does not appear in 'for in' loop
         writable: true
-    }); 
-    //Teacher.prototype.constructor = Teacher;
+    });
 
-    let teacher1 = new Teacher.prototype.constructor(`Tom`,`Cruise`,`60`,`male`,['football', 'cookery'], 'mathematics');
+    //更改greeting的函数
+    Teacher.prototype.greeting = function () {
+        let prefix;
+
+        if (this.gender === 'male' || this.gender === 'Male' || this.gender === 'm' || this.gender === 'M') {
+            prefix = 'Mr.';
+        } else if (this.gender === 'female' || this.gender === 'Female' || this.gender === 'f' || this.gender === 'F') {
+            prefix = 'Ms.';
+        } else {
+            prefix = 'Mx.';
+        }
+
+        alert('Hello. My name is ' + prefix + ' ' + this.name.last + ', and I teach ' + this.subject + '.');
+    };
+
+    //用Teacher的构造函数产生一个teacher1对象
+    let teacher1 = new Teacher('Dave', 'Griffiths', 31, 'male', ['football', 'cookery'], 'mathematics');
+
 
 </script>
 

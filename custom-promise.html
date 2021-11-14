@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Custom promise example</title>
+</head>
+
+<body>
+    <script>
+        // Define custom promise function
+
+        function timeoutPromise(message, interval) {
+            return new Promise((resolve, reject) => {
+                if (message === '' || typeof message !== 'string') {
+                    reject('Message is empty or not a string');
+                } else if (interval < 0 || typeof interval !== 'number') {
+                    reject('Interval is negative or not a number');
+                } else {                    
+                    console.log("Timer Start");//promise对象创建后会执行到此处
+                    setTimeout(() => {
+                        resolve(message);
+                    }, interval);
+                }
+            });
+        }
+
+        //promise对象一经创建，就开始执行创建时传入的回调函数
+        let hello = timeoutPromise('Hello there!', 1000);
+        hello.then(message => {
+            alert(message);
+        }).catch(e => {
+            console.log('Error: ' + e);
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simple fetch() with async/await</title>
+  </head>
+  <body>
+    <script>
+      //这个async虽然没有直接返回结果作为promise，但是支撑了内部的await语法调用，
+      //同时还产生了一个可以产生reject的promise对象
+      async function myFetch() {
+        let response = await fetch('coffee.jpg');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        } else {
+          let myBlob = await response.blob();
+
+          let objectURL = URL.createObjectURL(myBlob);
+          let image = document.createElement('img');
+          image.src = objectURL;
+          document.body.appendChild(image);
+        }
+      }
+
+      myFetch()
+      .catch(e => {
+        console.log('There has been a problem with your fetch operation: ' + e.message);
+      });
+    </script>
+  </body>
+</html>
