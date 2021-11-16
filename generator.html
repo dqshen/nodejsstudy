@@ -36,7 +36,7 @@
         console.log(returngen.next().value); // 0
         console.log(returngen.next().value); // 1
         //console.log(returngen.return());// generator.return()可以提前结束generator,后续再执行next将返回undefined
-        console.log(returngen.next().value); // 2 如果上一行执行return，这里会是undefined
+        console.log(returngen.next().value); // 2 也就是return iterationCount的值被封装返回了，如果上一行执行return，这里会是undefined
         console.log(returngen.next().value); // 已经结束了 返回undefined
 
         //3.next(value)可以把value值传至yield的位置，起到控制作用
@@ -68,6 +68,42 @@
         console.log(sequence.next().value);     // 1
         console.log(sequence.next().value);     // 1
         console.log(sequence.next().value);     // 2
+
+        //4.yield*能够用于传递其它的generator内容
+        function* g3() {
+            yield* [1, 2];
+            yield* '34';
+            yield* Array.from(arguments);
+        }
+
+        const iterator = g3(5, 6);
+
+        console.log(iterator.next()); // {value: 1, done: false}
+        console.log(iterator.next()); // {value: 2, done: false}
+        console.log(iterator.next()); // {value: "3", done: false} string对象本身自带iterator性质
+        console.log(iterator.next()); // {value: "4", done: false}
+        console.log(iterator.next()); // {value: 5, done: false}
+        console.log(iterator.next()); // {value: 6, done: false}
+        console.log(iterator.next()); // {value: undefined, done: true}
+
+        //5.yield*本身是一个表达式，有自己的结果
+        function* g4() {
+            yield* [1, 2, 3];
+            return 'foo';
+        }
+
+        function* g5() {
+            const g4ReturnValue = yield* g4();//yield* g4()2返回值是'foo'
+            console.log(g4ReturnValue) // 'foo'
+            return g4ReturnValue;
+        }
+
+        const iterator2 = g5();
+
+        console.log(iterator2.next()); // {value: 1, done: false}
+        console.log(iterator2.next()); // {value: 2, done: false}
+        console.log(iterator2.next()); // {value: 3, done: false} done is false because g5 generator isn't finished, only g4
+        console.log(iterator2.next()); // {value: 'foo', done: true} 这里输出的是被return的g4ReturValue
     </script>
 </body>
 
