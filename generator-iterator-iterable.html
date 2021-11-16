@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Iterator and iterable example</title>
+</head>
+
+<body>
+    <script>
+        //Iterator Protocol
+        //1.创建一个实现ECMAScript 2015 Iterator Protocol的函数，核心是:
+        //(1)函数返回对象有next方法
+        //(2)next方法返回属性done和value，如果done=false，value必须有，并且对象可以继续next
+        //如果done=true，对象不可以继续next
+        function makeIterator(array) {
+            let nextIndex = 0
+            return {
+                next: function () {
+                    return nextIndex < array.length ? {
+                        value: array[nextIndex++],
+                        done: false
+                    } : {
+                        done: true
+                    };
+                }
+            };
+        }
+
+        const it = makeIterator(['yo', 'ya']);
+
+        console.log(it.next().value); // 'yo'
+        console.log(it.next().value); // 'ya'
+        console.log(it.next().done);  // true
+
+        //Iterator Protocol
+        //2.generator自身实现Iterator protocol
+        function* makeSimpleGenerator(array) {
+            let nextIndex = 0;
+            while (nextIndex < array.length) {
+                yield array[nextIndex++];
+            }
+        }
+
+        const gen = makeSimpleGenerator(['yo', 'ya']);
+
+        console.log(gen.next().value); // 'yo'
+        console.log(gen.next().value); // 'ya'
+        console.log(gen.next().done);  // true
+
+        function* idMaker() {
+            let index = 0;
+            while (true) {
+                yield index++;
+            }
+        }
+
+        const it2 = idMaker();
+
+        console.log(it2.next().value); // '0'
+        console.log(it2.next().value); // '1'
+        console.log(it2.next().value); // '2'
+
+        //Iterable protocol
+        //实现这个protocol的对象才可以用for...of遍历
+        //3.Iterable protocol需要对象实现@@iterator属性
+        //@@iterator实际在程序中可以用computed property语法eval[Symbol.iterator]来声明
+        //声明内容返回一个包含next函数的对象，这个next函数也同iterator protocol一样，
+        //需要返回一个包含value和done属性的对象
+        class SimpleClass {
+            constructor(data) {
+                this.data = data;
+            }
+
+            //Symbol.iterator是javascript关键词，需要用Computed property语法对Symbol.iterator做eval
+            [Symbol.iterator]() {
+                // Use a new index for each iterator. This makes multiple
+                // iterations over the iterable safe for non-trivial cases,
+                // such as use of break or nested looping over the same iterable.
+                let index = 0;
+
+                return {
+                    next: () => {
+                        if (index < this.data.length) {
+                            return { value: this.data[index++], done: false }
+                        } else {
+                            return { done: true }
+                        }
+                    }
+                }
+            }
+        }
+
+        const simple = new SimpleClass([1, 2, 3, 4, 5]);
+
+        //实现了iterable protocol的对象可以用for...of遍历
+        for (const val of simple) {
+            console.log(val); // '1' '2' '3' '4' '5'
+        }
+
+        //Iterable protocol
+        //4.generator自带Iterable protocol实现，而且它的@@iterator就是它自身
+        //这种generator实现Iterable protocol的方式和generator一样只能一次性遍历
+        function* makeIterator2() {
+            yield 1;
+            yield 2;
+        }
+
+        const it3 = makeIterator2();
+
+        for (const itItem of it3) {
+            console.log(itItem);
+        }
+        // 1
+        // 2
+
+        for (const itItem of it3) {
+            console.log(itItem);
+        }
+        //没有输出
+
+        console.log(it3[Symbol.iterator]() === it3) // true;
+
+        // This example show us generator(iterator) is iterable object,
+        // which has the @@iterator method return the it (itself),
+        // and consequently, the it object can iterate only _once_.
+
+        // If we change it's @@iterator method to a function/generator
+        // which returns a new iterator/generator object, (it)
+        // can iterate many times
+
+        //给它定义专门的Symbol.iterator属性可以让它能够被多次遍历
+        it[Symbol.iterator] = function* () {
+            yield 2;
+            yield 1;
+        };
+
+        //Iterable protocol
+        //5.属性@@iterator也可以把它定义成generator函数，这样定义的对象是可以多次遍历的
+        const myIterable = {
+            *[Symbol.iterator]() {
+                yield 1;
+                yield 2;
+                yield 3;
+            }
+        }
+
+        for (let value of myIterable) {
+            console.log(value);
+        }
+        // 1
+        // 2
+        // 3
+        for (let value of myIterable) {
+            console.log(value);
+        }
+        // 1
+        // 2
+        // 3
+
+        console.log([...myIterable]); // [1, 2, 3]
+
+
+    </script>
+</body>
+
+</html>
