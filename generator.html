@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>generator example</title>
+</head>
+
+<body>
+    <script>
+        //1.function*创建一个generator，每次调用next返回yield的变量,并且停在yield所在的位置
+        function* generator() {
+            yield 1;
+            yield 2;
+            yield 3;
+        }
+
+        const gen = generator(); // "Generator { }"
+
+        console.log(gen.next().value); // 1
+        console.log(gen.next().value); // 2
+        console.log(gen.next().value); // 3
+
+        //2.generator可以有return，但该返回值只在yield都执行完时调用，
+        //一旦调用，generator会结束,后面的next不再返回内容，等同于所有yield执行完毕，generator结束
+        function* makeRangeIterator(start = 0, end = 2, step = 1) {
+            let iterationCount = 0;
+            for (let i = start; i < end; i += step) {
+                iterationCount++;
+                yield i;
+            }
+            return iterationCount;
+        }
+
+        let returngen = makeRangeIterator();
+        console.log(returngen.next().value); // 0
+        console.log(returngen.next().value); // 1
+        //console.log(returngen.return());// generator.return()可以提前结束generator,后续再执行next将返回undefined
+        console.log(returngen.next().value); // 2 如果上一行执行return，这里会是undefined
+        console.log(returngen.next().value); // 已经结束了 返回undefined
+
+        //3.next(value)可以把value值传至yield的位置，起到控制作用
+        function* fibonacci() {
+            let current = 0;
+            let next = 1;
+            while (true) {
+                //调用next(true)，赋值reset = true，终止循环
+                let reset = yield current;
+                //destructuring assignment
+                [current, next] = [next, next + current];
+                if (reset) {
+                    current = 0;
+                    next = 1;
+                }
+            }
+        }
+
+        const sequence = fibonacci();
+        console.log(sequence.next().value);     // 0
+        console.log(sequence.next().value);     // 1
+        console.log(sequence.next().value);     // 1
+        console.log(sequence.next().value);     // 2
+        console.log(sequence.next().value);     // 3
+        console.log(sequence.next().value);     // 5
+        console.log(sequence.next().value);     // 8
+        //上次next会停在yield位置，再次next会给reset赋值，并进行到下一个while循环的yield位置停住
+        console.log(sequence.next(true).value); // 0 
+        console.log(sequence.next().value);     // 1
+        console.log(sequence.next().value);     // 1
+        console.log(sequence.next().value);     // 2
+    </script>
+</body>
+
+</html>
