@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>proxy and reflect example</title>
+</head>
+
+<body>
+    <script>
+        //1.Proxy对象接收被代理的对象和增强
+        const target = {
+            message1: "hello",
+            message2: "everyone"
+        };
+
+        const handler1 = {};//这里是个空的增强，不做任何事
+
+        const proxy1 = new Proxy(target, handler1);
+        console.log(proxy1.message1); // hello
+        console.log(proxy1.message2); // everyone
+
+
+        //2.一个实现get增强的handler,get增强作用发生在代理对象获取属性时
+        const handler2 = {
+            get: function (target, prop, receiver) {
+                return "world";
+            }
+        };
+
+        const proxy2 = new Proxy(target, handler2);
+
+        console.log(proxy2.message1); // world
+        console.log(proxy2.message2); // world
+
+        //3.使用Reflect关键字调用被代理对象
+        const handler3 = {
+            get: function (target, prop, receiver) {
+                if (prop === "message2") {
+                    return "world";
+                }
+                //Reflect.get(...arguments)表示执行被代理对象target自己的相应方法，也就是用原方法，注意get和handler中定义的get是对应的
+                //handler内能声明的属性，除了get以外还有不少，但是原则上都是通过传入参数判断是否要代理，不用代理的内容用Reflect相应的方法去处理
+                //handler在这里称为trap,Reflect的行为称为Interception
+                return Reflect.get(...arguments);
+            },
+        };
+
+        const proxy3 = new Proxy(target, handler3);
+
+        console.log(proxy3.message1); // hello
+        console.log(proxy3.message2); // world
+
+        //4.通过代理实现类的扩展(extend)
+        function extend(sup, base) {
+            //获取base原来的构造函数
+            var descriptor = Object.getOwnPropertyDescriptor(
+                base.prototype, 'constructor'
+            );
+            //把base的原型置换为sup的原型
+            base.prototype = Object.create(sup.prototype);
+            var handler = {
+                //首先为代理实现一个构造函数，这个构造函数本质上返回用sup创建的对象
+                construct: function (target, args) {
+                    var obj = Object.create(base.prototype);
+                    this.apply(target, obj, args);                    
+                    return obj;
+                },
+                apply: function (target, that, args) {
+                    sup.apply(that, args);
+                    base.apply(that, args);
+                }
+            };
+            var proxy = new Proxy(base, handler);
+            descriptor.value = proxy;
+            Object.defineProperty(base.prototype, 'constructor', descriptor);
+            return proxy;
+        }
+
+        var Person = function (name) {
+            this.name = name;
+        };
+
+        var Boy = extend(Person, function (name, age) {
+            this.age = age;
+        });
+
+        Boy.prototype.gender = 'M';
+
+        var Peter = new Boy('Peter', 13);
+
+        console.log(Peter.gender);  // "M"
+        console.log(Peter.name);    // "Peter"
+        console.log(Peter.age);     // 13
+
+
+
+    </script>
+</body>
+
+</html>
