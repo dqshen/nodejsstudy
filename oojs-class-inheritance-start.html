@@ -98,8 +98,8 @@
 
         this.subject = subject;
     }
-    //2.让Teacher的prototype引用Person的prototype
-    //这是继承的后半部分，让Teacher完全引用Person的prototype的内容，
+    //2.让Teacher的prototype复制引用Person的prototype
+    //这是继承的后半部分，让Teacher完全复用Person的prototype的内容(Object.create将会用参数的prototype创建对象)
     //之后Teacher构造出来的对象teacher，它的__proto__就会包含Person.prototype里的内容
     Teacher.prototype = Object.create(Person.prototype);
 
