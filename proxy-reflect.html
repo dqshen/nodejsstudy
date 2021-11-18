@@ -52,39 +52,57 @@
         console.log(proxy3.message2); // world
 
         //4.通过代理实现类的扩展(extend)
+        //sup相当于父类，base则作为子类的基底
+        //base先继承sup的prototype，再将construct重载为base描述的新方法
         function extend(sup, base) {
-            //获取base原来的构造函数
+            //获取base原来用于派生的prototype里的构造函数存储对象,保存起来
             var descriptor = Object.getOwnPropertyDescriptor(
                 base.prototype, 'constructor'
             );
-            //把base的原型置换为sup的原型
+            //把base的原型置换为sup的原型，实现继承
+            //这样执行诸如new base()时，产生的会是基于sup.prototype的对象
             base.prototype = Object.create(sup.prototype);
             var handler = {
-                //首先为代理实现一个构造函数，这个构造函数本质上返回用sup创建的对象
+                //让代理去处理base的construct方法
                 construct: function (target, args) {
+                    //构造函数先以sup.prototype为原型创建对象
                     var obj = Object.create(base.prototype);
+                    //var obj = Object.create(function(){});
+                    //再以这个对象为主体，先后调用sup和base的(构造)函数，这个apply在下面定义了
+                    //依照下面apply的内容，apply实际作用的对象不是target，而是刚创建的obj
                     this.apply(target, obj, args);                    
                     return obj;
                 },
+                //定义了代理的apply函数，依序执行sup(args)和base(args)
                 apply: function (target, that, args) {
                     sup.apply(that, args);
                     base.apply(that, args);
                 }
             };
             var proxy = new Proxy(base, handler);
+            //把之前缓存的base的prototype里的存储构造函数的对象拿出来，赋值proxy
+            //这样作为proxy的target，它的构造函数就是proxy本身
             descriptor.value = proxy;
             Object.defineProperty(base.prototype, 'constructor', descriptor);
             return proxy;
         }
 
+        //创建一个Person函数对象
         var Person = function (name) {
             this.name = name;
+            
         };
-
+        
+        //扩展Person函数对象，为它引入新的创建函数
         var Boy = extend(Person, function (name, age) {
-            this.age = age;
+            this.age = age;        
         });
 
+        //为Boy的原型类增加gender属性，赋值为M
+        //因为Boy本质上是代理对象，给他的prototype设置属性实际上是给他代理的target.prototype设置属性
+        //但是在extend中，已经把作为target的base的prototype换成了Person的prototype
+        //所以这时Boy作为代理它的target的prototype变成了主体内容是来自Person的，构造函数来自extend的base(其实是proxy)，
+        //并且有一个gender='M'属性的prototype
         Boy.prototype.gender = 'M';
 
         var Peter = new Boy('Peter', 13);
