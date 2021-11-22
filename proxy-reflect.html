@@ -8,6 +8,7 @@
 
 <body>
     <script>
+        'use strict';
         //1.Proxy对象接收被代理的对象和增强
         const target = {
             message1: "hello",
@@ -143,6 +144,50 @@
         // delete proxy.foo        // still TypeError
         console.log(typeof proxy)            // "object", typeof doesn't trigger any trap
 
+        //5.Reflect替代call方法
+        //ES2015之前更换方法的this一般用call语法
+        //i.e: Function.prototype.apply.call(Math.floor, undefined, [1.75])
+        //ES2015以后可以用Reflect代替以上写法
+        //i.e: Reflect.apply(func,this,args)
+        Reflect.apply(Math.floor, undefined, [1.75])
+        // 1
+
+        Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111])
+        // "hello"
+
+        Reflect.apply(RegExp.prototype.exec, /ab/, ['confabulation']).index
+        // 4
+
+        Reflect.apply(''.charAt, 'ponies', [3])
+        // "i"
+
+        //6.Reflect替代defineProperty方法
+        //Object.defineProperty在给对象增加属性如果失败需要用try...catch捕获异常
+        //ES2015后可以用Reflect.defineProperty替代，能够直接返回true/false反映是否成功
+        /* const object1 = {};
+
+        Object.defineProperty(object1, 'property1', {
+            value: 42,
+            writable: false
+        });
+
+        object1.property1 = 77;
+        // throws an error in strict mode
+
+        console.log(object1.property1); 
+        // expected output: 42*/
+        const object1 = {}
+        if (Reflect.defineProperty(object1, 'property1', {
+            value: 42,
+            writable: false
+        })) {
+            console.log(object1.property1); 
+            console.log("const can't redefine"); 
+            //object1.property1 = 77;// throws an error in strict mode
+            // success
+        } else {            
+            // failure 
+        }
 
     </script>
 </body>
