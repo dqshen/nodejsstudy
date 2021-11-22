@@ -52,34 +52,47 @@
         console.log(proxy3.message2); // world
 
         //4.通过代理实现类的扩展(extend)
-        //sup相当于父类，base则作为子类的基底
-        //base先继承sup的prototype，再将construct重载为base描述的新方法
+        //参考oojs-class-inheritance-start.html中类继承的流程:
+        //i.子类的prototype需要从父类通过Object.create复制
+        //ii.在i之后，确保子类prototype中的constructor替换成子类的
+        //iii.父类的构造函数和子类的构造函数内容需要依序执行
+
+        //下面的extend实现中，sup相当于父类，base则作为子类的基底
         function extend(sup, base) {
-            //获取base原来用于派生的prototype里的构造函数存储对象,保存起来
+            //ii.i获取base原来用于派生的prototype里的构造函数存储对象,保存起来
             var descriptor = Object.getOwnPropertyDescriptor(
                 base.prototype, 'constructor'
             );
-            //把base的原型置换为sup的原型，实现继承
+            //i.把base的原型置换为sup的原型，实现继承的第一步
+            //base先继承sup的prototype，再将construct重载为base描述的新方法
             //这样执行诸如new base()时，产生的会是基于sup.prototype的对象
             base.prototype = Object.create(sup.prototype);
             var handler = {
-                //让代理去处理base的construct方法
+                //iii.ii让代理去处理base的constructor方法
+                //目的是让父类和子类的构造函数依序执行
                 construct: function (target, args) {
-                    //构造函数先以sup.prototype为原型创建对象
+                    //iii.iii构造函数先以sup.prototype为原型创建对象
+                    //因为后面用了apply方法执行父类的构造函数，
+                    //根据类的关系，父类的构造方法要在父类的prototype对象已经创建的基础上执行
                     var obj = Object.create(base.prototype);
-                    //var obj = Object.create(function(){});
-                    //再以这个对象为主体，先后调用sup和base的(构造)函数，这个apply在下面定义了
+                    //iii.iv再以这个对象为主体，先后调用sup和base的(构造)函数，这个apply在下面定义了
                     //依照下面apply的内容，apply实际作用的对象不是target，而是刚创建的obj
-                    this.apply(target, obj, args);                    
+                    this.apply(target, obj, args);
                     return obj;
                 },
-                //定义了代理的apply函数，依序执行sup(args)和base(args)
+                //iii.v定义了代理的apply函数，依序执行sup(args)和base(args)
                 apply: function (target, that, args) {
                     sup.apply(that, args);
                     base.apply(that, args);
                 }
             };
+            //iii.i为了实现第三步，用Proxy机制去代理base原来的构造方法
+            //跟oojs里直接走prototype不同，proxy用handler替代原来base的函数
+            //需要替换的函数就是原来base的constructor
             var proxy = new Proxy(base, handler);
+            //ii.ii 这步的作用除了形式上让prototype有了constructor以外，没看出来实际效果，毕竟base执行constructor的过程已经被handler代理了
+            //如果是代理是revocable创建的可能有意义
+
             //把之前缓存的base的prototype里的存储构造函数的对象拿出来，赋值proxy
             //这样作为proxy的target，它的构造函数就是proxy本身
             descriptor.value = proxy;
@@ -90,12 +103,13 @@
         //创建一个Person函数对象
         var Person = function (name) {
             this.name = name;
-            
+
         };
-        
+        Person.prototype.bio = function () { console.log('it\'s me') };
+
         //扩展Person函数对象，为它引入新的创建函数
         var Boy = extend(Person, function (name, age) {
-            this.age = age;        
+            this.age = age;
         });
 
         //为Boy的原型类增加gender属性，赋值为M
@@ -111,6 +125,23 @@
         console.log(Peter.name);    // "Peter"
         console.log(Peter.age);     // 13
 
+        //4.可撤回的proxy，使用Proxy.revocable方法创建，创建的其他部分和new Proxy大抵相同
+        let revocable = Proxy.revocable({}, {
+            get: function (target, name) {
+                return '[[' + name + ']]'
+            }
+        })
+        let proxy = revocable.proxy
+        console.log(proxy.foo)  // "[[foo]]"
+
+        //在这里撤回
+        revocable.revoke()
+
+        //由于原始对象{}并没有定义任何foo所以下面的访问如果解除注释都会报错
+        // console.log(proxy.foo)  // TypeError is thrown
+        // proxy.foo = 1           // TypeError again
+        // delete proxy.foo        // still TypeError
+        console.log(typeof proxy)            // "object", typeof doesn't trigger any trap
 
 
     </script>
