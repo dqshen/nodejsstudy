@@ -12,7 +12,7 @@
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         } else {
-          return await response.blob();
+          return await response.blob();//返回一个promise，等价于return Promise.resolve(response.blob())
         }
       }
 

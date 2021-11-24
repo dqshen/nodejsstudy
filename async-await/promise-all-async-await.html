@@ -1,65 +1,88 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>promise.all() example with async/await</title>
-  </head>
-  <body>
-    <script>
-      // Define function to fetch a file and return it in a usable form
-      async function fetchAndDecode(url, type) {
-        // Returning the top level promise, so the result of the entire chain is returned out of the function
-        let response = await fetch(url);
 
-        let content;
+<head>
+  <meta charset="utf-8">
+  <title>promise.all() example with async/await</title>
+</head>
 
-        // Depending on what type of file is being fetched, use the relevant function to decode its contents
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        } else {
-          if(type === 'blob') {
-            content = await response.blob();
-          } else if(type === 'text') {
-            content = await response.text();
-          }
+<body>
+  <script>
+    // Define function to fetch a file and return it in a usable form
+    async function fetchAndDecode(url, type) {
+      // Returning the top level promise, so the result of the entire chain is returned out of the function
+      /* promise如果处置成功await产生的表达式对象将是传给resolve的参数对象 */
+      let response = /* 程序会停在await表达式处等待promise处置完成(等号右边) */await fetch(url);
 
-          return content;
+      let content;
+
+      // Depending on what type of file is being fetched, use the relevant function to decode its contents
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      } else {
+        if (type === 'blob') {
+          content = await response.blob();//异步promise函数都要用上await，返回的是promise向后传递的结果对象
+        } else if (type === 'text') {
+          content = await response.text();
         }
+
+        return content;//返回的结果如果本身不是promise类型，那么async负责把它包装成promise，这里等价为Promise.resolve(content)
+        //包装过程返回的对象不是原来对象的引用，而是深度拷贝，注意看下面的示例
+        /*      const p = new Promise((res, rej) => {
+                  res(1);
+                })
+        
+                async function asyncReturn() {
+                  return p;
+                }
+        
+                function basicReturn() {
+                  return Promise.resolve(p);
+                }
+        
+                console.log(p === basicReturn()); // true
+                console.log(p === asyncReturn()); // false
+         */
       }
+    }
 
-      async function displayContent() {
-        // Call the fetchAndDecode() method to fetch the images and the text, and store their promises in variables
-        let coffee = fetchAndDecode('coffee.jpg', 'blob');
-        let tea = fetchAndDecode('tea.jpg', 'blob');
-        let description = fetchAndDecode('description.txt', 'text');
+    async function displayContent() {
+      // Call the fetchAndDecode() method to fetch the images and the text, and store their promises in variables
+      //3个promise创建时就开始执行
+      let coffee = fetchAndDecode('coffee.jpg', 'blob');
+      let tea = fetchAndDecode('tea.jpg', 'blob');
+      let description = fetchAndDecode('description.txt', 'text');
 
-        // Use Promise.all() to run code only when all three function calls have resolved
-        let values = await Promise.all([coffee, tea, description]);
+      // Use Promise.all() to run code only when all three function calls have resolved
+      // await返回的表达式是Promise.all向下传递的参数，也就是一个数组
+      let values = await Promise.all([coffee, tea, description]);
 
-        console.log(values);
-        // Store each value returned from the promises in separate variables; create object URLs from the blobs
-        let objectURL1 = URL.createObjectURL(values[0]);
-        let objectURL2 = URL.createObjectURL(values[1]);
-        let descText = values[2];
+      console.log(values);
+      // Store each value returned from the promises in separate variables; create object URLs from the blobs
+      let objectURL1 = URL.createObjectURL(values[0]);
+      let objectURL2 = URL.createObjectURL(values[1]);
+      let descText = values[2];
 
-        // Display the images in <img> elements
-        let image1 = document.createElement('img');
-        let image2 = document.createElement('img');
-        image1.src = objectURL1;
-        image2.src = objectURL2;
-        document.body.appendChild(image1);
-        document.body.appendChild(image2);
+      // Display the images in <img> elements
+      let image1 = document.createElement('img');
+      let image2 = document.createElement('img');
+      image1.src = objectURL1;
+      image2.src = objectURL2;
+      document.body.appendChild(image1);
+      document.body.appendChild(image2);
 
-        // Display the text in a paragraph
-        let para = document.createElement('p');
-        para.textContent = descText;
-        document.body.appendChild(para);
-      };
+      // Display the text in a paragraph
+      let para = document.createElement('p');
+      para.textContent = descText;
+      document.body.appendChild(para);
+      // 这个async函数没有return,等价于最后return Promise.resolve(values).then(()->undefined)
+    };
 
-      displayContent()
+    displayContent()
       .catch((e) =>
         console.log(e)
-      );
-    </script>
-  </body>
+      );//catch能够接受async中的全部异常，包括await的Promise.all中各个promise的异常
+  </script>
+</body>
+
 </html>

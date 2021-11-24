@@ -17,6 +17,7 @@
       };
 
       async function timeTest() {
+        // 每一个await 程序都要等待Promise创建并处置完毕，再执行下一行，所以共需9秒
         await timeoutPromise(3000);
         await timeoutPromise(3000);
         await timeoutPromise(3000);

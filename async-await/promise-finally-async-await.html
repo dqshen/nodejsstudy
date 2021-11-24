@@ -29,6 +29,7 @@
           }
 
         } finally {
+          // 用finally可以对async函数处置完成的进度有更全面的把握，无论是resolve还是reject
           console.log(`fetch attempt for "${url}" finished.`);
         };
       }

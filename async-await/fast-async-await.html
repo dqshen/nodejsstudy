@@ -8,20 +8,24 @@
     <script>
       // Define custom promise function
 
+      //Promise在new的时候，内部逻辑已经开始执行
       function timeoutPromise(interval) {
         return new Promise((resolve, reject) => {
           setTimeout(function(){
             resolve("done");
-          }, interval);
+          }, interval);//这里的Promise创建以后，计时器已经开始
         });
       };
 
       async function timeTest() {
+        //三个对象创建以后，计时器都开始工作
         const timeoutPromise1 = timeoutPromise(3000);
         const timeoutPromise2 = timeoutPromise(3000);
         const timeoutPromise3 = timeoutPromise(3000);
 
+        //async函数内部，程序会依次停在await处，等待promise处置完成
         await timeoutPromise1;
+        //由于三个计时器几乎同时开始，所以第一个promise处置完成时，后面的promise也几乎同时完成了
         await timeoutPromise2;
         await timeoutPromise3;
       }
@@ -30,7 +34,7 @@
       timeTest().then(() => {
         let finishTime = Date.now();
         let timeTaken = finishTime - startTime;
-        alert("Time taken in milliseconds: " + timeTaken);
+        alert("Time taken in milliseconds: " + timeTaken);//由于三个promise处置完成时间几乎相同，所以耗时共3000ms
       })
     </script>
   </body>
