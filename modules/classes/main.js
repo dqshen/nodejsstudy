@@ -1,3 +1,4 @@
+// 用class语法定义的module引入时更整洁
 import { Canvas } from './modules/canvas.js';
 
 import { Square } from './modules/square.js';

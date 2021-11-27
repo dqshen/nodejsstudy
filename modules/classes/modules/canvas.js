@@ -1,3 +1,4 @@
+// 用class定义的object导出时更具有模块化的优势特点
 class Canvas {
   constructor(id, parent, width, height) {
     this.id = id;
