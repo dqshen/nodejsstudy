@@ -1,3 +1,4 @@
+// 只有module文件才可以用import export关键字
 function create(id, parent, width, height) {
   let divWrapper = document.createElement('div');
   let canvasElem = document.createElement('canvas');

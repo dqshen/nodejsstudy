@@ -1,3 +1,5 @@
+// 只有module文件才可以用import export关键字
+// 作为root module,被html引用时使用type="module" 而不是type="javascript"
 import { create, createReportList } from './modules/canvas.js';
 import { name, draw, reportArea, reportPerimeter } from './modules/square.js';
 import randomSquare from './modules/square.js';
