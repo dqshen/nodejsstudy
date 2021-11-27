@@ -1,3 +1,4 @@
+// 散装的module文件import时可以用import * as Name from 'module.js' 语法
 import * as Canvas from './modules/canvas.js';
 
 import * as Square from './modules/square.js';
