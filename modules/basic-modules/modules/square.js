@@ -1,3 +1,4 @@
+// 只有module文件才可以用import export关键字
 const name = 'square';
 
 function draw(ctx, length, x, y, color) {
@@ -53,5 +54,9 @@ function randomSquare(ctx) {
   };
 }
 
+// 非default对象导出时要用{}包起来
 export { name, draw, reportArea, reportPerimeter };
+// ES6为了方便兼容CommonJS等AMD{异步模块定义}模式的模块化系统,每个模块都可以export一个default function
+// default function在import时不需要用大括号{} 直接写作 import func from 'module.js'
+// 可以直接写export default function(...){...} 到import的时候再给它起名字
 export default randomSquare;
