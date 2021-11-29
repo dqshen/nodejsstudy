@@ -1,6 +1,8 @@
+// 由于getColors的export操作对象用await生成,所以引擎会异步执行await操作的同时继续执行后续的import
 import colors from './modules/getColors.js';
 import { Canvas } from './modules/canvas.js';
 
+// 在异步import完成之前,后续的脚本内容(后续的import除外)不会执行
 let circleBtn = document.querySelector('.circle');
 let squareBtn = document.querySelector('.square');
 let triangleBtn = document.querySelector('.triangle');
