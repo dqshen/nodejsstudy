@@ -10,6 +10,8 @@ myCanvas.create();
 myCanvas.createReportList();
 
 // draw a square
+// import方法生成一个resolve(module)的promise,这个module约等于import * as module from 'module.js'生成的module
+// 向下传递的module操作起来和import * as from语法中的一样
 squareBtn.addEventListener('click', () => {
   import('./modules/square.js').then((Module) => {
     let square1 = new Module.Square(myCanvas.ctx, myCanvas.listId, 50, 50, 100, 'blue');
