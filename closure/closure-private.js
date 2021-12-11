@@ -63,14 +63,14 @@ var counter2 = makeCounter();
 // alert(counter1.value());  // 0.
 
 counter1.increment();
-console.log(counter1.value());
+console.log(counter1.value()); // 1
 counter1.increment();
-console.log(counter1.value());
+console.log(counter1.value()); // 2
 // alert(counter1.value()); // 2.
 
 counter1.decrement();
-console.log(counter1.value());
-console.log(counter2.value());
+console.log(counter1.value()); // 1
+console.log(counter2.value()); // 0
 // alert(counter1.value()); // 1.
 // alert(counter2.value()); // 0.
 
@@ -79,10 +79,16 @@ let counter3 = makeCounter();
 //     return 1;
 // };
 counter3.increment();
-console.log(counter3.value());
-let counter4 = new counter3.constructor();
-counter4.value();
-// console.log(counter4.base());
+console.log(counter3.value()); // 1
 
-// alert(counter4.base()); // 1
-// console.log(counter4.base());  // 1.
+let constructor1 = counter3.constructor;
+constructor1.prototype.base =  function(){
+    return 2;
+};
+let counter4 = new constructor1();
+console.log(counter4.base()); // 2
+
+let counter5  = Object.create(counter3);
+console.log(counter5.base());  // 2
+console.log(counter5.value()); // 1
+console.log(counter3.base());  // 2
