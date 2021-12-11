@@ -81,14 +81,20 @@ let counter3 = makeCounter();
 counter3.increment();
 console.log(counter3.value()); // 1
 
+// 3.给工厂产生的object添加公有字段
+// 先获取作为object的constructor 为它增加字段
 let constructor1 = counter3.constructor;
 constructor1.prototype.base =  function(){
     return 2;
 };
 let counter4 = new constructor1();
+// counter4由object构造函数创建，不包含私有字段
 console.log(counter4.base()); // 2
 
+// counter5拷贝counter3,同时有公有字段和私有字段
 let counter5  = Object.create(counter3);
 console.log(counter5.base());  // 2
 console.log(counter5.value()); // 1
+
+// 由于构造函数的prototye增加了base字段，所以counter3多了一个公有字段
 console.log(counter3.base());  // 2
