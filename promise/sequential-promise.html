@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Sequential promise example</title>
+</head>
+
+<body>
+    <script>
+
+        let promises = [myPromiseFactoryA, myPromiseFactoryB, myPromiseFactoryC];
+
+        var finalres = executeSequentially(promises).then(console.log.bind(console));
+
+        function executeSequentially(promiseFactories) {
+            var result = Promise.resolve("Start!");
+            promiseFactories.forEach(function (promiseFactory) {
+                result = result.then(promiseFactory);
+            });
+            return result;
+        }
+
+
+        function myPromiseFactoryA(message) {
+            return somethingThatCreatesAPromise(message);
+        }
+
+        function somethingThatCreatesAPromise(message) {
+            var p = new Promise((res, rej) => {
+                setTimeout(() => {
+                    console.log(message);
+                    res(message + '~');
+                }, 300);
+            });
+            return p;
+        }
+
+        function myPromiseFactoryB(message) {
+            return somethingThatCreatesBPromise(message);
+        }
+
+        function somethingThatCreatesBPromise(message) {
+            var p = new Promise((res, rej) => {
+                setTimeout(() => {
+                    console.log(message);
+                    res(message + '#');
+                }, 300);
+            });
+            return p;
+        }
+
+        function myPromiseFactoryC(message) {
+            return somethingThatCreatesCPromise(message);
+        }
+
+        function somethingThatCreatesCPromise(message) {
+            var p = new Promise((res, rej) => {
+                setTimeout(() => {
+                    console.log(message);
+                    res(message + '*');
+                }, 300);
+            });
+            return p;
+        } 
+
+
+    </script>
+</body>
+
+</html>
