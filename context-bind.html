@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bubble-and-capture-demo</title>
+  </head>
+  <body>
+    <button id="button">🐱 🐾</button>
+    <textarea>abc</textarea>
+    <script>
+      class MeowctComponent {
+        constructor() {
+          this.paw = document.getElementById("button");
+        }
+
+        meow() {
+          console.info("🐱 on this: ", this.paw);
+        }
+      }
+
+      const cat = new MeowctComponent();
+      /**
+      * 箭头函数的自绑定：
+      * 如果下面的事件传递cat的方法对象，比如写成
+      * cat.paw.addEventListener("click",cat.meow);
+      * 那么在paw(button对象)去执行事件绑定方法meow时，会将自己作为上下文this传递到方法中
+      * 又由于button对象自己没有paw变量，执行结果会是undefined
+      * 箭头函数由于本身不能绑定this，下面的写法中，箭头函数内部如果直接打印this，得到的会是全局对象windows
+      * 也就是说箭头函数直接采用了定义时的外层环境的this.
+      * 在箭头函数里执行cat.meow(),meow方法会被cat对象绑定上下文的this(就是cat自己)
+      * 不像直接用方法对象时，被事件对象paw绑定错误的this，这就是箭头函数的自绑定效果。
+      * 实际执行结果等价于cat.meow.bind(cat)
+      */
+      // cat.paw.addEventListener("click", cat.meow); //undefined
+      // cat.paw.addEventListener("click", cat.meow.bind(cat)); // button
+      cat.paw.addEventListener("click", ()=>cat.meow()) ; //button
+    </script>
+  </body>
+</html>
